@@ -1,0 +1,12 @@
+df <- df %>% mutate(
+  Offshore = factor(Offshore == TRUE, levels = c(TRUE, FALSE),
+                    labels = c('offshore','on land' ))
+)
+
+library(rpart)
+library(rpart.plot)
+
+tree <- rpart(Offshore ~.,data = df)
+tree
+
+https://www.nbshare.io/notebook/233979015/How-To-Analyze-Yahoo-Finance-Data-With-R/
