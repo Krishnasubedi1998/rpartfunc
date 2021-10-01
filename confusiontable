@@ -1,0 +1,63 @@
+[
+pred <- predict(tree, df, type = "class")
+head(pred)
+
+predict(tree, df) %>%
+  head() 
+  
+]
+  
+  
+  To make a prediction using the tree we have created, we pass predict the tree we have created and the dataset we want it to work on.
+
+pred <- predict(tree, df, type = "class")
+head(pred)
+##        1        2        3        4        5        6 
+## offshore offshore  on land offshore offshore offshore 
+## Levels: offshore on land
+Each has been classified into its category. You can also recover the probabilities of the classification by dropping the type = “class”
+
+predict(tree, df) %>%
+  head()
+##     offshore   on land
+## 1 0.94000000 0.0600000
+## 2 0.94000000 0.0600000
+## 3 0.02173913 0.9782609
+## 4 0.94000000 0.0600000
+## 5 0.94000000 0.0600000
+## 6 0.94000000 0.0600000
+We see that the first earthquake has a 93% shot of being offshore.
+
+Confusion table follows by using the classified data.
+
+confusion_table <- with(df, table(Offshore, pred))
+confusion_table
+##           pred
+## Offshore   offshore on land
+##   offshore       94       3
+##   on land         6      54
+I will now examine what happens if I withhold some of the data and do a cross validation. I split the data into thirds for testing and training.
+
+library(caret)
+## Loading required package: lattice
+## 
+## Attaching package: 'caret'
+## The following object is masked from 'package:purrr':
+## 
+##     lift
+inTrain <- createDataPartition(y = df$Month, p = .66, list = FALSE)
+df_train <- df %>% slice(inTrain)
+df_test <- df %>% slice(-inTrain)
+dim(df_train)
+## [1] 108   9
+dim(df_test)
+## [1] 49  9
+I will use the training set to build my model and then test it. If you look at my original tree, the country is very important. I am going to remove it from my tree and not allow that to be part of the decision tree (it was causing hell in me creating a tree!).
+
+tree_from_train <- rpart(Offshore ~.,data = subset(df_train, select=c( -Country)))
+pred_test <- predict(tree_from_train, subset(df_test, select=c( -Country)), type = "class")
+with(df_test, table(Offshore, pred_test))
+##           pred_test
+## Offshore   offshore on land
+##   offshore       24       2
+##   on land         2      21
